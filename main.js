@@ -415,42 +415,221 @@ function renderMatches() {
         : '<div class="empty">No possible matches yet.</div>';
 }
 
+
 // CLAIM REQUEST
 
 function requestClaim(lostId, foundId) {
     const lost = items.find(item => item.id === lostId);
     const found = items.find(item => item.id === foundId);
 
-    if (!lost || !found) return;
-
-    const proof = prompt(
-        "Describe a detail that can help verify ownership:"
-    );
-
-    if (!proof || !proof.trim()) {
-        alert("Please enter proof details.");
+    if (!lost || !found) {
+        alert("Item information could not be found.");
         return;
     }
 
-    claims.unshift({
+    // Prevent duplicate pending requests
+    const duplicate = claims.some(claim =>
+        claim.lostId === lostId &&
+        claim.foundId === foundId &&
+        claim.status === "Pending"
+    );
+
+    if (duplicate) {
+        alert("You already have a pending claim request for this item.");
+        return;
+    }
+
+    // Collect claimant information
+    const claimantName = prompt("Enter your full name:");
+
+    if (claimantName === null) return;
+
+    if (claimantName.trim().length < 2) {
+        alert("Please enter a valid full name.");
+        return;
+    }
+
+    const contact = prompt("Enter your contact information:");
+
+    if (contact === null) return;
+
+    if (contact.trim().length < 7) {
+        alert("Please enter valid contact information.");
+        return;
+    }
+
+    const proof = prompt(
+        "Describe a specific detail that can verify your ownership:"
+    );
+
+    if (proof === null) return;
+
+    if (proof.trim().length < 10) {
+        alert("Please provide at least 10 characters of ownership details.");
+        return;
+    }
+
+    // Confirm submission
+    const confirmed = confirm(
+        "Submit your claim request?\n\n" +
+        "Claimant: " + claimantName.trim() + "\n" +
+        "Lost Item: " + lost.name + "\n" +
+        "Found Item: " + found.name
+    );
+
+    if (!confirmed) return;
+
+    // Create claim request
+    const claim = {
         id: Date.now().toString(),
-        lostId,
-        foundId,
+        lostId: lostId,
+        foundId: foundId,
+        claimantName: claimantName.trim(),
+        contact: contact.trim(),
         proof: proof.trim(),
         status: "Pending",
         date: new Date().toLocaleString()
-    });
+    };
+
+    claims.unshift(claim);
 
     addHistory(
-        `A claim request was submitted for ${lost.name}.`
+        `${claim.claimantName} submitted a claim request for ${lost.name}.`
     );
 
     saveData();
 
-    alert("Claim request submitted.");
+    alert(
+        "Claim request submitted successfully!\n\n" +
+        "Your request is now Pending approval."
+    );
 
     showPage("claims");
 }
+
+// DISPLAY CLAIMS
+
+function renderClaims() {
+    $("claimList").innerHTML = claims.length
+        ? claims.map(claim => {
+
+            const lost = items.find(item =>
+                item.id === claim.lostId
+            );
+
+            const found = items.find(item =>
+                item.id === claim.foundId
+            );
+
+            const statusClass = {
+                Pending: "pending",
+                Approved: "approved",
+                Rejected: "rejected"
+            }[claim.status] || "pending";
+
+            return `
+                <article class="item-card">
+
+                    <div class="item-top">
+                        <div>
+                            <h3>
+                                ${safe(lost?.name || "Item report")}
+                            </h3>
+
+                            <p>
+                                Possible found item:
+                                ${safe(found?.name || "Item report")}
+                            </p>
+                        </div>
+
+                        <span class="status ${statusClass}">
+                            ${safe(claim.status)}
+                        </span>
+                    </div>
+
+                    <p>
+                        Claimant:
+                        ${safe(claim.claimantName || "Not provided")}
+                    </p>
+
+                    <p>
+                        Contact:
+                        ${safe(claim.contact || "Not provided")}
+                    </p>
+
+                    <p>
+                        Ownership details:
+                        ${safe(claim.proof)}
+                    </p>
+
+                    <p>
+                        Submitted:
+                        ${safe(claim.date)}
+                    </p>
+
+                    ${claim.status === "Pending" ? `
+                        <div class="item-actions">
+
+                            <button class="small-button"
+                            onclick="updateClaim('${claim.id}', 'Approved')">
+                                Approve
+                            </button>
+
+                            <button class="small-button danger"
+                            onclick="updateClaim('${claim.id}', 'Rejected')">
+                                Reject
+                            </button>
+
+                        </div>
+                    ` : ""}
+
+                </article>
+            `;
+
+        }).join("")
+        : '<div class="empty">No claim requests yet.</div>';
+}
+
+// APPROVE OR REJECT CLAIM
+
+function updateClaim(id, status) {
+    const claim = claims.find(entry => entry.id === id);
+
+    if (!claim || claim.status !== "Pending") return;
+
+    if (!["Approved", "Rejected"].includes(status)) return;
+
+    const confirmed = confirm(
+        `Are you sure you want to ${status.toLowerCase()} this claim?`
+    );
+
+    if (!confirmed) return;
+
+    claim.status = status;
+
+    if (status === "Approved") {
+        const found = items.find(item =>
+            item.id === claim.foundId
+        );
+
+        const lost = items.find(item =>
+            item.id === claim.lostId
+        );
+
+        if (found) found.status = "Returned";
+        if (lost) lost.status = "Returned";
+    }
+
+    addHistory(
+        `Claim request from ${claim.claimantName || "a user"} was ${status.toLowerCase()}.`
+    );
+
+    saveData();
+    refresh();
+
+    alert(`Claim request successfully ${status.toLowerCase()}!`);
+}
+
 
 // DISPLAY CLAIMS
 
