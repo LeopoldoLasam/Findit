@@ -1,4 +1,3 @@
-
 const KEYS = {
     items: "findit_simple_items",
     claims: "findit_simple_claims",
@@ -11,11 +10,17 @@ let historyRecords = JSON.parse(localStorage.getItem(KEYS.history)) || [];
 
 const $ = id => document.getElementById(id);
 
+
+// SAVE DATA
+
 function saveData() {
     localStorage.setItem(KEYS.items, JSON.stringify(items));
     localStorage.setItem(KEYS.claims, JSON.stringify(claims));
     localStorage.setItem(KEYS.history, JSON.stringify(historyRecords));
 }
+
+
+// ESCAPE HTML
 
 function safe(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -27,6 +32,9 @@ function safe(value) {
     })[char]);
 }
 
+
+// ACTIVITY HISTORY
+
 function addHistory(message) {
     historyRecords.unshift({
         message,
@@ -34,10 +42,15 @@ function addHistory(message) {
     });
 
     historyRecords = historyRecords.slice(0, 30);
+
     saveData();
 }
 
+
+// NAVIGATION
+
 function showPage(page) {
+
     document.querySelectorAll(".page").forEach(section => {
         section.classList.toggle("active", section.id === page);
     });
@@ -51,8 +64,10 @@ function showPage(page) {
         browse: ["Browse Items", "Search and view lost and found items."],
         report: ["Report Item", "Submit a lost or found item report."],
         matches: ["Possible Matches", "Review items with similar details."],
-        claims: ["Claim Requests", "Review and manage item claims."]
+        claims: ["Claim Requests", "View automatically matched claim requests."]
     };
+
+    if (!titles[page]) return;
 
     $("pageTitle").textContent = titles[page][0];
     $("pageSubtitle").textContent = titles[page][1];
@@ -60,11 +75,13 @@ function showPage(page) {
     refresh();
 }
 
+
 document.querySelectorAll(".nav-link").forEach(button => {
     button.addEventListener("click", () => {
         showPage(button.dataset.page);
     });
 });
+
 
 document.querySelectorAll("[data-go]").forEach(button => {
     button.addEventListener("click", () => {
@@ -72,15 +89,18 @@ document.querySelectorAll("[data-go]").forEach(button => {
     });
 });
 
+
 // REPORT ITEM
 
 $("reportForm").addEventListener("submit", async event => {
+
     event.preventDefault();
 
     const file = $("itemImage").files[0];
     let image = "";
 
     if (file) {
+
         if (!file.type.startsWith("image/")) {
             alert("Please select a valid image.");
             return;
@@ -92,12 +112,14 @@ $("reportForm").addEventListener("submit", async event => {
         }
 
         image = await new Promise((resolve, reject) => {
+
             const reader = new FileReader();
 
             reader.onload = () => resolve(reader.result);
             reader.onerror = reject;
 
             reader.readAsDataURL(file);
+
         }).catch(() => "");
 
         if (!image) {
@@ -106,25 +128,42 @@ $("reportForm").addEventListener("submit", async event => {
         }
     }
 
+
     const item = {
+
         id: Date.now().toString(),
+
         type: $("reportType").value,
+
         name: $("itemName").value.trim(),
+
         category: $("category").value,
+
         description: $("description").value.trim(),
+
         color: $("color").value.trim(),
+
         brand: $("brand").value.trim(),
+
         location: $("location").value.trim(),
+
         date: $("itemDate").value,
+
         contact: $("contact").value.trim(),
+
         image: image,
+
         status: $("reportType").value === "lost" ? "Lost" : "Found",
+
         createdAt: new Date().toISOString()
+
     };
+
 
     items.unshift(item);
 
     addHistory(`${item.name} was reported as ${item.type}.`);
+
     saveData();
 
     event.target.reset();
@@ -132,11 +171,14 @@ $("reportForm").addEventListener("submit", async event => {
     alert("Report submitted successfully!");
 
     showPage("dashboard");
+
 });
+
 
 // DASHBOARD
 
 function renderDashboard() {
+
     $("totalReports").textContent = items.length;
 
     $("lostCount").textContent =
@@ -148,11 +190,13 @@ function renderDashboard() {
     $("returnedCount").textContent =
         items.filter(item => item.status === "Returned").length;
 
+
     const recent = items.slice(0, 5);
 
     $("recentReports").innerHTML = recent.length
         ? recent.map(item => itemCard(item, false)).join("")
         : '<div class="empty">No reports yet.</div>';
+
 
     $("recentActivity").innerHTML = historyRecords.length
         ? historyRecords.slice(0, 5).map(record => `
@@ -162,27 +206,36 @@ function renderDashboard() {
             </div>
         `).join("")
         : '<div class="empty">No recent activity.</div>';
+
 }
+
 
 // ITEM CARD
 
 function itemCard(item, actions = true) {
+
     return `
+
         <article class="item-card">
 
             <div class="item-top">
+
                 <div>
+
                     <h3>${safe(item.name)}</h3>
+
                     <p>
                         ${safe(item.category)} ·
                         ${safe(item.color)}
                         ${item.brand ? "· " + safe(item.brand) : ""}
                     </p>
+
                 </div>
 
                 <span class="status">
                     ${safe(item.status)}
                 </span>
+
             </div>
 
             <p>${safe(item.description)}</p>
@@ -201,6 +254,7 @@ function itemCard(item, actions = true) {
             ` : ""}
 
             ${actions ? `
+
                 <div class="item-actions">
 
                     <button class="small-button secondary"
@@ -216,17 +270,23 @@ function itemCard(item, actions = true) {
                     ` : ""}
 
                 </div>
+
             ` : ""}
 
         </article>
+
     `;
 }
+
 
 // BROWSE ITEMS
 
 function renderBrowse() {
+
     const search = $("searchItems").value.toLowerCase().trim();
+
     const filter = $("itemFilter").value;
+
 
     const filtered = items.filter(item => {
 
@@ -239,27 +299,37 @@ function renderBrowse() {
             String(value).toLowerCase().includes(search)
         );
 
+
         const matchesFilter = filter === "all" ||
             item.type === filter ||
             item.status === filter;
 
+
         return matchesSearch && matchesFilter;
+
     });
+
 
     $("allItems").innerHTML = filtered.length
         ? filtered.map(item => itemCard(item)).join("")
         : '<div class="empty">No items found.</div>';
+
 }
 
+
 $("searchItems").addEventListener("input", renderBrowse);
+
 $("itemFilter").addEventListener("change", renderBrowse);
+
 
 // VIEW ITEM
 
 function viewItem(id) {
+
     const item = items.find(entry => entry.id === id);
 
     if (!item) return;
+
 
     alert(
         `Item: ${item.name}\n` +
@@ -271,48 +341,67 @@ function viewItem(id) {
         `Status: ${item.status}\n` +
         `Contact: ${item.contact}`
     );
+
 }
+
 
 // DELETE ITEM
 
 function deleteItem(id) {
+
     const item = items.find(entry => entry.id === id);
 
     if (!item || !confirm("Delete this report?")) return;
 
+
     items = items.filter(entry => entry.id !== id);
 
     addHistory(`${item.name} report was deleted.`);
+
     saveData();
 
     refresh();
+
 }
+
 
 // SMART MATCHING
 
 function similarity(a, b) {
+
     const first = String(a || "").toLowerCase().trim();
+
     const second = String(b || "").toLowerCase().trim();
 
+
     if (!first || !second) return 0;
+
     if (first === second) return 1;
 
+
     const wordsA = new Set(first.split(/\s+/));
+
     const wordsB = new Set(second.split(/\s+/));
+
 
     const common = [...wordsA].filter(word =>
         wordsB.has(word)
     ).length;
+
 
     const total = new Set([
         ...wordsA,
         ...wordsB
     ]).size;
 
+
     return total ? common / total : 0;
+
 }
 
+
 function matchScore(lost, found) {
+
     const fields = [
         ["name", 25],
         ["category", 20],
@@ -323,64 +412,94 @@ function matchScore(lost, found) {
         ["date", 5]
     ];
 
+
     let score = 0;
+
     let weight = 0;
 
+
     fields.forEach(([key, points]) => {
+
         if (lost[key] && found[key]) {
+
             score += similarity(lost[key], found[key]) * points;
+
             weight += points;
+
         }
+
     });
+
 
     return weight
         ? Math.round(score / weight * 100)
         : 0;
+
 }
 
+
+// GET POSSIBLE MATCHES
+
 function getMatches() {
+
     const lostItems = items.filter(item =>
         item.type === "lost" && item.status === "Lost"
     );
+
 
     const foundItems = items.filter(item =>
         item.type === "found" && item.status === "Found"
     );
 
+
     const results = [];
 
+
     lostItems.forEach(lost => {
+
         foundItems.forEach(found => {
 
             const percentage = matchScore(lost, found);
 
             if (percentage >= 40) {
+
                 results.push({
                     lost,
                     found,
                     percentage
                 });
+
             }
 
         });
+
     });
+
 
     return results.sort((a, b) =>
         b.percentage - a.percentage
     );
+
 }
 
-// DISPLAY MATCHES
+
+// DISPLAY POSSIBLE MATCHES
 
 function renderMatches() {
+
     const matches = getMatches();
 
+
     $("matchList").innerHTML = matches.length
+
         ? matches.map(match => `
+
             <article class="item-card">
 
                 <div class="item-top">
+
                     <div>
+
                         <h3>
                             ${safe(match.lost.name)}
                             ↔
@@ -396,348 +515,375 @@ function renderMatches() {
                             Found location:
                             ${safe(match.found.location)}
                         </p>
+
                     </div>
 
                     <span class="status">
-                        ${match.percentage}% match
+                        ${match.percentage}% similarity
                     </span>
+
                 </div>
 
                 <div class="item-actions">
+
                     <button class="small-button"
-                    onclick="requestClaim('${match.lost.id}', '${match.found.id}')">
-                        Request Claim
+                    onclick="requestClaim('${match.lost.id}')">
+                        Submit Claim
                     </button>
+
                 </div>
 
             </article>
+
         `).join("")
+
         : '<div class="empty">No possible matches yet.</div>';
+
 }
 
 
-// CLAIM REQUEST
+// AUTOMATIC CLAIM MATCHING
 
-function requestClaim(lostId, foundId) {
-    const lost = items.find(item => item.id === lostId);
-    const found = items.find(item => item.id === foundId);
+function requestClaim(lostId) {
 
-    if (!lost || !found) {
-        alert("Item information could not be found.");
-        return;
-    }
-
-    // Prevent duplicate pending requests
-    const duplicate = claims.some(claim =>
-        claim.lostId === lostId &&
-        claim.foundId === foundId &&
-        claim.status === "Pending"
+    const lost = items.find(item =>
+        item.id === lostId
     );
 
-    if (duplicate) {
-        alert("You already have a pending claim request for this item.");
+
+    if (!lost) {
+
+        alert("Lost item report not found.");
+
         return;
+
     }
 
-    // Collect claimant information
+
+    // CLAIMANT NAME VALIDATION
+
     const claimantName = prompt("Enter your full name:");
 
     if (claimantName === null) return;
 
+
     if (claimantName.trim().length < 2) {
-        alert("Please enter a valid full name.");
+
+        alert("Please enter a valid name.");
+
         return;
+
     }
+
+
+    // CONTACT VALIDATION
 
     const contact = prompt("Enter your contact information:");
 
     if (contact === null) return;
 
+
     if (contact.trim().length < 7) {
+
         alert("Please enter valid contact information.");
+
         return;
+
     }
 
+
+    // OWNERSHIP PROOF VALIDATION
+
     const proof = prompt(
-        "Describe a specific detail that can verify your ownership:"
+        "Describe specific details that can prove your ownership:"
     );
 
     if (proof === null) return;
 
+
     if (proof.trim().length < 10) {
+
         alert("Please provide at least 10 characters of ownership details.");
+
         return;
+
     }
 
-    // Confirm submission
+
+    // SEARCH FOR FOUND ITEMS
+
+    const possibleMatches = items
+
+        .filter(item =>
+            item.type === "found" &&
+            item.status === "Found"
+        )
+
+        .map(found => ({
+
+            foundId: found.id,
+
+            percentage: matchScore(lost, found)
+
+        }))
+
+        .filter(match => match.percentage >= 40)
+
+        .sort((a, b) =>
+            b.percentage - a.percentage
+        )
+
+        .slice(0, 5);
+
+
+    // DETERMINE STATUS
+
+    const claimStatus = possibleMatches.length > 0
+        ? "Matched"
+        : "Unmatched";
+
+
+    // CONFIRM SUBMISSION
+
     const confirmed = confirm(
+
         "Submit your claim request?\n\n" +
+
         "Claimant: " + claimantName.trim() + "\n" +
-        "Lost Item: " + lost.name + "\n" +
-        "Found Item: " + found.name
+
+        "Lost Item: " + lost.name + "\n\n" +
+
+        "The system will automatically search for matching items."
+
     );
+
 
     if (!confirmed) return;
 
-    // Create claim request
+
+    // CREATE CLAIM RECORD
+
     const claim = {
+
         id: Date.now().toString(),
+
         lostId: lostId,
-        foundId: foundId,
+
         claimantName: claimantName.trim(),
+
         contact: contact.trim(),
+
         proof: proof.trim(),
-        status: "Pending",
+
+        matches: possibleMatches,
+
+        status: claimStatus,
+
         date: new Date().toLocaleString()
+
     };
+
 
     claims.unshift(claim);
 
+
+    // SAVE HISTORY
+
     addHistory(
-        `${claim.claimantName} submitted a claim request for ${lost.name}.`
+
+        `${claimantName.trim()} submitted a claim for ${lost.name}. Result: ${claimStatus}.`
+
     );
+
 
     saveData();
 
-    alert(
-        "Claim request submitted successfully!\n\n" +
-        "Your request is now Pending approval."
-    );
+
+    // CONFIRMATION MESSAGE
+
+    if (claimStatus === "Matched") {
+
+        alert(
+
+            "Claim submitted successfully!\n\n" +
+
+            possibleMatches.length +
+
+            " possible matching item(s) found.\n\n" +
+
+            "Your claim status is: MATCHED"
+
+        );
+
+    } else {
+
+        alert(
+
+            "Claim submitted successfully!\n\n" +
+
+            "No matching found items were detected.\n\n" +
+
+            "Your claim status is: UNMATCHED"
+
+        );
+
+    }
+
 
     showPage("claims");
+
 }
 
-// DISPLAY CLAIMS
+
+// DISPLAY CLAIM REQUESTS
 
 function renderClaims() {
+
     $("claimList").innerHTML = claims.length
+
         ? claims.map(claim => {
 
             const lost = items.find(item =>
                 item.id === claim.lostId
             );
 
-            const found = items.find(item =>
-                item.id === claim.foundId
-            );
+
+            const claimMatches = Array.isArray(claim.matches)
+                ? claim.matches
+                : [];
+
 
             const statusClass = {
-                Pending: "pending",
-                Approved: "approved",
-                Rejected: "rejected"
+
+                Matched: "approved",
+
+                Unmatched: "rejected"
+
             }[claim.status] || "pending";
 
+
             return `
+
                 <article class="item-card">
 
                     <div class="item-top">
+
                         <div>
+
                             <h3>
-                                ${safe(lost?.name || "Item report")}
+                                ${safe(lost?.name || "Lost item report")}
                             </h3>
 
                             <p>
-                                Possible found item:
-                                ${safe(found?.name || "Item report")}
+                                Claimant:
+                                ${safe(claim.claimantName || "Not provided")}
                             </p>
+
                         </div>
 
                         <span class="status ${statusClass}">
                             ${safe(claim.status)}
                         </span>
+
                     </div>
 
-                    <p>
-                        Claimant:
-                        ${safe(claim.claimantName || "Not provided")}
-                    </p>
 
                     <p>
                         Contact:
                         ${safe(claim.contact || "Not provided")}
                     </p>
 
+
                     <p>
-                        Ownership details:
+                        Ownership Details:
                         ${safe(claim.proof)}
                     </p>
+
 
                     <p>
                         Submitted:
                         ${safe(claim.date)}
                     </p>
 
-                    ${claim.status === "Pending" ? `
-                        <div class="item-actions">
 
-                            <button class="small-button"
-                            onclick="updateClaim('${claim.id}', 'Approved')">
-                                Approve
-                            </button>
+                    <div class="match-results">
 
-                            <button class="small-button danger"
-                            onclick="updateClaim('${claim.id}', 'Rejected')">
-                                Reject
-                            </button>
-
-                        </div>
-                    ` : ""}
-
-                </article>
-            `;
-
-        }).join("")
-        : '<div class="empty">No claim requests yet.</div>';
-}
-
-// APPROVE OR REJECT CLAIM
-
-function updateClaim(id, status) {
-    const claim = claims.find(entry => entry.id === id);
-
-    if (!claim || claim.status !== "Pending") return;
-
-    if (!["Approved", "Rejected"].includes(status)) return;
-
-    const confirmed = confirm(
-        `Are you sure you want to ${status.toLowerCase()} this claim?`
-    );
-
-    if (!confirmed) return;
-
-    claim.status = status;
-
-    if (status === "Approved") {
-        const found = items.find(item =>
-            item.id === claim.foundId
-        );
-
-        const lost = items.find(item =>
-            item.id === claim.lostId
-        );
-
-        if (found) found.status = "Returned";
-        if (lost) lost.status = "Returned";
-    }
-
-    addHistory(
-        `Claim request from ${claim.claimantName || "a user"} was ${status.toLowerCase()}.`
-    );
-
-    saveData();
-    refresh();
-
-    alert(`Claim request successfully ${status.toLowerCase()}!`);
-}
+                        <h4>Automatic Matching Results</h4>
 
 
-// DISPLAY CLAIMS
+                        ${claimMatches.length
 
-function renderClaims() {
-    $("claimList").innerHTML = claims.length
-        ? claims.map(claim => {
+                            ? claimMatches.map(match => {
 
-            const lost = items.find(item =>
-                item.id === claim.lostId
-            );
+                                const found = items.find(item =>
+                                    item.id === match.foundId
+                                );
 
-            const found = items.find(item =>
-                item.id === claim.foundId
-            );
 
-            return `
-                <article class="item-card">
+                                return found ? `
 
-                    <div class="item-top">
-                        <div>
-                            <h3>
-                                ${safe(lost?.name || "Item report")}
-                            </h3>
+                                    <div class="match-result-card">
 
-                            <p>
-                                Possible found item:
-                                ${safe(found?.name || "Item report")}
-                            </p>
-                        </div>
+                                        <strong>
+                                            ${safe(found.name)}
+                                        </strong>
 
-                        <span class="status">
-                            ${safe(claim.status)}
-                        </span>
+                                        <span class="status">
+                                            ${match.percentage}% Similarity
+                                        </span>
+
+                                        <p>
+                                            Category:
+                                            ${safe(found.category)}
+                                        </p>
+
+                                        <p>
+                                            Color:
+                                            ${safe(found.color)}
+                                        </p>
+
+                                        <p>
+                                            Location:
+                                            ${safe(found.location)}
+                                        </p>
+
+                                    </div>
+
+                                ` : "";
+
+                            }).join("")
+
+                            : '<p class="muted">No possible matching items found.</p>'
+
+                        }
+
                     </div>
 
-                    <p>
-                        Ownership details:
-                        ${safe(claim.proof)}
-                    </p>
-
-                    <p>
-                        Submitted:
-                        ${safe(claim.date)}
-                    </p>
-
-                    ${claim.status === "Pending" ? `
-                        <div class="item-actions">
-
-                            <button class="small-button"
-                            onclick="updateClaim('${claim.id}', 'Approved')">
-                                Approve
-                            </button>
-
-                            <button class="small-button danger"
-                            onclick="updateClaim('${claim.id}', 'Rejected')">
-                                Reject
-                            </button>
-
-                        </div>
-                    ` : ""}
-
                 </article>
+
             `;
 
         }).join("")
+
         : '<div class="empty">No claim requests yet.</div>';
+
 }
 
-// APPROVE OR REJECT CLAIM
-
-function updateClaim(id, status) {
-    const claim = claims.find(entry => entry.id === id);
-
-    if (!claim || claim.status !== "Pending") return;
-
-    if (!confirm(`${status} this claim request?`)) return;
-
-    claim.status = status;
-
-    if (status === "Approved") {
-        const found = items.find(item =>
-            item.id === claim.foundId
-        );
-
-        const lost = items.find(item =>
-            item.id === claim.lostId
-        );
-
-        if (found) found.status = "Returned";
-        if (lost) lost.status = "Returned";
-    }
-
-    addHistory(
-        `A claim request was ${status.toLowerCase()}.`
-    );
-
-    saveData();
-    refresh();
-}
 
 // REFRESH SYSTEM
 
 function refresh() {
+
     renderDashboard();
+
     renderBrowse();
+
     renderMatches();
+
     renderClaims();
+
 }
 
+
 refresh();
-      
+    
