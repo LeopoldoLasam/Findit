@@ -1,3 +1,6 @@
+
+/* GENERAL */
+
 * {
     margin: 0;
     padding: 0;
@@ -10,6 +13,9 @@ body {
     background: #f4f5f9;
     color: #273244;
 }
+
+
+/* SIDEBAR */
 
 .sidebar {
     position: fixed;
@@ -53,11 +59,17 @@ body {
     color: #3265c8;
 }
 
+
+/* MAIN CONTENT */
+
 .main {
     margin-left: 162px;
     padding: 22px 21px 40px;
     min-height: 100vh;
 }
+
+
+/* TOPBAR */
 
 .topbar {
     display: flex;
@@ -86,6 +98,9 @@ body {
     font-size: 12px;
 }
 
+
+/* PAGES */
+
 .page {
     display: none;
 }
@@ -93,6 +108,9 @@ body {
 .page.active {
     display: block;
 }
+
+
+/* DASHBOARD SUMMARY */
 
 .summary-grid {
     display: grid;
@@ -119,6 +137,9 @@ body {
     font-size: 23px;
 }
 
+
+/* CONTENT SECTIONS */
+
 .content-section {
     margin-bottom: 22px;
 }
@@ -142,6 +163,9 @@ body {
     font-size: 12px;
     cursor: pointer;
 }
+
+
+/* ITEM AND ACTIVITY LISTS */
 
 .item-list,
 .activity-list {
@@ -178,6 +202,9 @@ body {
     align-items: flex-start;
 }
 
+
+/* STATUS LABELS */
+
 .status {
     display: inline-block;
     padding: 4px 8px;
@@ -187,6 +214,26 @@ body {
     font-size: 10px;
     white-space: nowrap;
 }
+
+.status.pending {
+    background: #fff4d6;
+    color: #a66a00;
+}
+
+.status.approved,
+.status.matched {
+    background: #e2f7e9;
+    color: #218447;
+}
+
+.status.rejected,
+.status.unmatched {
+    background: #fce7e7;
+    color: #c03939;
+}
+
+
+/* BUTTONS */
 
 .item-actions {
     display: flex;
@@ -204,6 +251,12 @@ body {
     color: white;
     font-size: 12px;
     cursor: pointer;
+    transition: 0.2s;
+}
+
+.small-button:hover,
+.primary-button:hover {
+    opacity: 0.85;
 }
 
 .small-button.secondary {
@@ -216,11 +269,17 @@ body {
     color: #b43b3b;
 }
 
+
+/* SEARCH AND FILTER */
+
 .toolbar {
     display: flex;
     gap: 10px;
     margin: 15px 0;
 }
+
+
+/* INPUTS */
 
 input,
 select,
@@ -240,6 +299,9 @@ select:focus,
 textarea:focus {
     border-color: #3265c8;
 }
+
+
+/* REPORT FORM */
 
 .form-section {
     max-width: 650px;
@@ -277,6 +339,9 @@ textarea:focus {
     padding: 11px 17px;
 }
 
+
+/* EMPTY STATES */
+
 .empty {
     padding: 16px;
     background: #fff;
@@ -285,7 +350,45 @@ textarea:focus {
     font-size: 12px;
 }
 
+
+/* AUTOMATIC CLAIM MATCHING */
+
+.match-results {
+    margin-top: 15px;
+}
+
+.match-results h4 {
+    font-size: 13px;
+    color: #3265c8;
+    margin-bottom: 10px;
+}
+
+.match-result-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f4f6fb;
+    border: 1px solid #edf0f4;
+    border-radius: 7px;
+}
+
+.match-result-card strong {
+    font-size: 13px;
+    color: #273244;
+}
+
+.match-result-card p {
+    font-size: 12px;
+    color: #788190;
+}
+
+
+/* RESPONSIVE DESIGN */
+
 @media (max-width: 600px) {
+
     .sidebar {
         width: 162px;
     }
@@ -321,39 +424,5 @@ textarea:focus {
         font-size: 11px;
         padding: 10px 7px;
     }
-  }
 
-
-.status.pending {
-    background: #fff4d6;
-    color: #a66a00;
-}
-
-.status.approved {
-    background: #e2f7e9;
-    color: #218447;
-}
-
-.status.rejected {
-    background: #fce7e7;
-    color: #c03939;
-}
-
-
-/* CLAIM STATUS COLORS */
-
-.status.pending {
-    background: #fff4d6;
-    color: #a66a00;
-}
-
-.status.approved {
-    background: #e2f7e9;
-    color: #218447;
-}
-
-.status.rejected {
-    background: #fce7e7;
-    color: #c03939;
-}
-
+    }
