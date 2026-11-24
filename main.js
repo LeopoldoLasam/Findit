@@ -107,7 +107,7 @@ $("reportForm").addEventListener("submit", async event => {
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            alert("Please choose an image smaller than 700 KB.");
+            alert("Please choose an image smaller than 5 MB.");
             return;
         }
 
