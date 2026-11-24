@@ -322,3 +322,38 @@ textarea:focus {
         padding: 10px 7px;
     }
   }
+
+
+.status.pending {
+    background: #fff4d6;
+    color: #a66a00;
+}
+
+.status.approved {
+    background: #e2f7e9;
+    color: #218447;
+}
+
+.status.rejected {
+    background: #fce7e7;
+    color: #c03939;
+}
+
+
+/* CLAIM STATUS COLORS */
+
+.status.pending {
+    background: #fff4d6;
+    color: #a66a00;
+}
+
+.status.approved {
+    background: #e2f7e9;
+    color: #218447;
+}
+
+.status.rejected {
+    background: #fce7e7;
+    color: #c03939;
+}
+
