@@ -167,9 +167,18 @@ function itemCard(item, showActions = true) {
     const actionHTML = showActions
         ? `
             <div class="item-actions">
-                <button onclick="requestClaim('${item.id}')">Claim item</button>
-                <button onclick="deleteItem('${item.id}')">Delete</button>
-            </div>
+    <button onclick="viewItem('${item.id}')">
+        View Details
+    </button>
+
+    <button onclick="requestClaim('${item.id}')">
+        Claim item
+    </button>
+
+    <button onclick="deleteItem('${item.id}')">
+        Delete
+    </button>
+</div>
         `
         : "";
 
