@@ -468,7 +468,7 @@ function requestClaim(itemId) {
     showToast("Claim request submitted successfully.");
 }
 
-// CLAIMS DISPLAY
+// Claim Request
 function updateClaims() {
     const claimList = document.getElementById("claimList");
 
@@ -480,6 +480,7 @@ function updateClaims() {
                     <p>Claimant: ${escapeHTML(claim.claimantName)}</p>
                     <p>Contact: ${escapeHTML(claim.contact)}</p>
                     <p>Proof: ${escapeHTML(claim.proof)}</p>
+
                     <div class="item-meta">
                         <span>◷ ${escapeHTML(claim.date)}</span>
                         <span>${(claim.matches || []).length} possible match(es)</span>
@@ -487,10 +488,28 @@ function updateClaims() {
                 </div>
 
                 <span class="item-status ${
-                    claim.status === "Matched" ? "found" : "lost"
+                    claim.status === "Approved" ? "found" :
+                    claim.status === "Rejected" ? "lost" : ""
                 }">
-                    ${escapeHTML(claim.status)}
+                    ${escapeHTML(claim.status || "Pending")}
                 </span>
+
+                ${
+                    claim.status !== "Approved" &&
+                    claim.status !== "Rejected"
+                    ? `
+                        <div class="item-actions">
+                            <button onclick="approveClaim('${claim.id}')">
+                                Approve
+                            </button>
+
+                            <button onclick="rejectClaim('${claim.id}')">
+                                Reject
+                            </button>
+                        </div>
+                    `
+                    : ""
+                }
             </article>
         `).join("")
         : emptyState(
@@ -499,7 +518,7 @@ function updateClaims() {
         );
 }
 
-// APPROVE CLAIM
+// Approved Claim
 function approveClaim(claimId) {
     const claim = claims.find(
         entry => String(entry.id) === String(claimId)
@@ -507,15 +526,12 @@ function approveClaim(claimId) {
 
     if (!claim) return;
 
-    const confirmed = confirm(
-        `Are you sure you want to approve ${claim.claimantName}'s claim?`
-    );
-
-    if (!confirmed) return;
+    if (!confirm(`Approve ${claim.claimantName}'s claim?`)) {
+        return;
+    }
 
     claim.status = "Approved";
 
-    // Mark the claimed item as returned
     const item = items.find(
         entry => String(entry.id) === String(claim.itemId)
     );
@@ -534,7 +550,7 @@ function approveClaim(claimId) {
     showToast("Claim request approved successfully.");
 }
 
-// REJECT CLAIM
+// Reject Claim
 function rejectClaim(claimId) {
     const claim = claims.find(
         entry => String(entry.id) === String(claimId)
@@ -542,11 +558,9 @@ function rejectClaim(claimId) {
 
     if (!claim) return;
 
-    const confirmed = confirm(
-        `Are you sure you want to reject ${claim.claimantName}'s claim?`
-    );
-
-    if (!confirmed) return;
+    if (!confirm(`Reject ${claim.claimantName}'s claim?`)) {
+        return;
+    }
 
     claim.status = "Rejected";
 
