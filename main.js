@@ -518,6 +518,100 @@ function updateClaims() {
         );
 }
 
+
+function viewItem(itemId) {
+    const item = items.find(
+        entry => String(entry.id) === String(itemId)
+    );
+
+    if (!item) {
+        showToast("Item not found.");
+        return;
+    }
+
+    // Remove an existing modal
+    const existingModal = document.getElementById("itemViewModal");
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const imageContent = item.image
+        ? `<img src="${escapeHTML(item.image)}"
+                alt="${escapeHTML(item.name)}"
+                class="view-item-image">`
+        : `<div class="no-item-image">
+                No picture uploaded
+           </div>`;
+
+    const modal = document.createElement("div");
+    modal.id = "itemViewModal";
+    modal.className = "item-view-modal";
+
+    modal.innerHTML = `
+        <div class="item-view-content">
+
+            <button class="close-view-modal"
+                    onclick="closeItemModal()">
+                &times;
+            </button>
+
+            <h2>Item Details</h2>
+
+            <div class="view-item-picture">
+                ${imageContent}
+            </div>
+
+            <div class="view-item-details">
+
+                <span class="item-status ${
+                    item.status === "Found" ? "found" :
+                    item.status === "Returned" ? "returned" : "lost"
+                }">
+                    ${escapeHTML(item.status || "Unknown")}
+                </span>
+
+                <h3>${escapeHTML(item.name || "Unnamed Item")}</h3>
+
+                <p><strong>Report Type:</strong>
+                    ${escapeHTML(item.type || "N/A")}</p>
+
+                <p><strong>Category:</strong>
+                    ${escapeHTML(item.category || "N/A")}</p>
+
+                <p><strong>Description:</strong>
+                    ${escapeHTML(item.description || "N/A")}</p>
+
+                <p><strong>Color:</strong>
+                    ${escapeHTML(item.color || "N/A")}</p>
+
+                <p><strong>Brand:</strong>
+                    ${escapeHTML(item.brand || "N/A")}</p>
+
+                <p><strong>Location:</strong>
+                    ${escapeHTML(item.location || "N/A")}</p>
+
+                <p><strong>Date Reported:</strong>
+                    ${escapeHTML(item.date || "N/A")}</p>
+
+                <p><strong>Contact Information:</strong>
+                    ${escapeHTML(item.contact || "N/A")}</p>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+
+function closeItemModal() {
+    const modal = document.getElementById("itemViewModal");
+
+    if (modal) {
+        modal.remove();
+    }
+}
+
 // Approved Claim
 function approveClaim(claimId) {
     const claim = claims.find(
