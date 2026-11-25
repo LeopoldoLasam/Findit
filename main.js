@@ -499,6 +499,66 @@ function updateClaims() {
         );
 }
 
+// APPROVE CLAIM
+function approveClaim(claimId) {
+    const claim = claims.find(
+        entry => String(entry.id) === String(claimId)
+    );
+
+    if (!claim) return;
+
+    const confirmed = confirm(
+        `Are you sure you want to approve ${claim.claimantName}'s claim?`
+    );
+
+    if (!confirmed) return;
+
+    claim.status = "Approved";
+
+    // Mark the claimed item as returned
+    const item = items.find(
+        entry => String(entry.id) === String(claim.itemId)
+    );
+
+    if (item) {
+        item.status = "Returned";
+    }
+
+    addHistory(
+        `Approved ${claim.claimantName}'s claim for ${claim.itemName}.`
+    );
+
+    saveData();
+    refreshSystem();
+
+    showToast("Claim request approved successfully.");
+}
+
+// REJECT CLAIM
+function rejectClaim(claimId) {
+    const claim = claims.find(
+        entry => String(entry.id) === String(claimId)
+    );
+
+    if (!claim) return;
+
+    const confirmed = confirm(
+        `Are you sure you want to reject ${claim.claimantName}'s claim?`
+    );
+
+    if (!confirmed) return;
+
+    claim.status = "Rejected";
+
+    addHistory(
+        `Rejected ${claim.claimantName}'s claim for ${claim.itemName}.`
+    );
+
+    saveData();
+    refreshSystem();
+
+    showToast("Claim request rejected.");
+}
 // DELETE ITEM
 function deleteItem(itemId) {
     const item = items.find(entry => String(entry.id) === String(itemId));
